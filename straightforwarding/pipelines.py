@@ -41,6 +41,6 @@ class StraightforwardingPipeline(object):
             new_entry.Arrival_Date = new_entry.Container_Info_Date
             
         if bool(sheet.findall(new_entry.HB_No)):
-            new_entry.update_entry
+            new_entry.update_entry(new_entry.HB_No)
         else:
             new_entry.add_entry()
