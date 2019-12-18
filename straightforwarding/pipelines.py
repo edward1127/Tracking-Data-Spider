@@ -3,6 +3,8 @@ import gspread
 import os
 from oauth2client.service_account import ServiceAccountCredentials
 from straightforwarding.google_sheet_api import Entry, sheet
+from fuzzywuzzy import fuzz
+from retrying import retry
 # -*- coding: utf-8 -*-
 
 # Define your item pipelines here
@@ -12,6 +14,7 @@ from straightforwarding.google_sheet_api import Entry, sheet
 
 
 class StraightforwardingPipeline(object):
+    @retry(wait_fixed=110000)
     def process_item(self, item, spider):
         new_entry = Entry(HB_No=item['HB_No'],
                           PO_No=json.dumps(item['PO_No']),
@@ -29,10 +32,12 @@ class StraightforwardingPipeline(object):
         if new_entry.Container_Info_Location_Description == 'Container Returned to Carrier(Destination)' or \
                 new_entry.Container_Info_Location_Description == 'Empty Container Returned from Customer' or\
                 new_entry.Container_Info_Location_Description == 'Container to consignee' or\
-                new_entry.Container_Info_Location_Description == 'Empty Equipment Returned':
+                new_entry.Container_Info_Location_Description == 'Empty Equipment Returned' or\
+                fuzz.partial_ratio(new_entry.Status, "Arrived at Destination (ETA Delay)") == 100:
             new_entry.Arrival_Date = new_entry.Container_Info_Date
 
         if bool(sheet.findall(new_entry.HB_No)):
             new_entry.update_entry(new_entry.HB_No)
         else:
             new_entry.add_entry()
+
