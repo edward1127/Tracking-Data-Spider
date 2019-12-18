@@ -1,17 +1,38 @@
 import gspread
+import os
 from retrying import retry
 from oauth2client.service_account import ServiceAccountCredentials
 import random
 from retrying import retry
 
+
+def create_keyfile_dict():
+    variables_keys = {
+        "type": os.getenv("SHEET_TYPE"),
+        "project_id": os.getenv("SHEET_PROJECT_ID"),
+        "private_key_id": os.getenv("SHEET_PRIVATE_KEY_ID"),
+        "private_key": os.getenv("SHEET_PRIVATE_KEY"),
+        "client_email": os.getenv("SHEET_CLIENT_EMAIL"),
+        "client_id": os.getenv("SHEET_CLIENT_ID"),
+        "auth_uri": os.getenv("SHEET_AUTH_URI"),
+        "token_uri": os.getenv("SHEET_TOKEN_URI"),
+        "auth_provider_x509_cert_url": os.getenv("SHEET_AUTH_PROVIDER_X509_CERT_URL"),
+        "client_x509_cert_url": os.getenv("SHEET_CLIENT_X509_CERT_URL")
+    }
+    return variables_keys
+
+
 scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
          "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
 
-creds = ServiceAccountCredentials.from_json_keyfile_name("creds.json", scope)
+creds = ServiceAccountCredentials.from_json_keyfile_dict(
+    create_keyfile_dict(), scope)
 
 client = gspread.authorize(creds)
 
-sheet = client.open("StraightForwardingSpider").sheet1  # Open the spreadhseet
+sheet = client.open("StraightForwardingSpider").sheet1
+
+# Open the spreadhseet
 
 
 class Entry:
@@ -62,7 +83,6 @@ class Entry:
             row_to_update, last_col_A1_notation, row_to_update))
         for i in range(len(col_headers)):
             cell_list[i].value = getattr(self, col_headers[i], '')
-            # print(col_headers[i] + ': ' + cell_list[i].value )
         sheet.update_cells(cell_list)
 
         print('updated')
