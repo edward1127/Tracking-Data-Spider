@@ -1,8 +1,10 @@
 .vscode
 __pycache__
 env
-setup.sh
+setup_production.sh
+setup_test.sh
 creds.json
+DataSync-a580eb06cf2c.json
 
 # OS generated files #
 ######################

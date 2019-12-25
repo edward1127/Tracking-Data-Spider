@@ -12,12 +12,16 @@ from retrying import retry
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
+'''
+    If the HB_No from Straighforwarding can match the one in the sheet, update it. 
+    Otherwise add it to a new row. 
+'''
 
 class StraightforwardingPipeline(object):
     @retry(wait_fixed=110000)
     def process_item(self, item, spider):
         new_entry = Entry(HB_No=item['HB_No'],
-                          PO_No=json.dumps(item['PO_No']),
+                          PO_No=item['PO_No'],
                           ETD=item['ETD'],
                           ETA=item['ETA'],
                           Shipper=item['Shipper'],
@@ -37,7 +41,7 @@ class StraightforwardingPipeline(object):
             new_entry.Arrival_Date = new_entry.Container_Info_Date
 
         if bool(sheet.findall(new_entry.HB_No)):
-            new_entry.update_entry(new_entry.HB_No)
+            new_entry.update_entry()
         else:
             new_entry.add_entry()
 

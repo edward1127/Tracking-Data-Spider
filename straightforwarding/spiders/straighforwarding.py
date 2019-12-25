@@ -44,21 +44,13 @@ class StraightForwardingSpider(scrapy.Spider):
         items = StraightforwardingItem()
 
         for row in response.xpath('//tr[starts-with(@class, "single_shipment_row")]'):
-            # PO_No_from_list = row.xpath('./td[3]/text()').getall()
-            Status = row.xpath('./td[10]/@uib-tooltip-html').get()
 
-            # items['PO_No_from_list'] = PO_No_from_list
-            # items['Status'] = " ".join(Status.split('\'')[1].split('<br>'))
+            Status = row.xpath('./td[10]/@uib-tooltip-html').get()
 
             link = self.BASE_URL_SPECIFIC + row.xpath('./@data-hbl').get()
             yield scrapy.Request(link,
                                  callback=self.start_scraping,
                                  cb_kwargs=dict(Status=Status))
-
-        # links = response.xpath('//tr/@data-hbl').getall()
-        # for link in links:
-        #     absolute_url = self.BASE_URL_SPECIFIC + link
-        #     yield scrapy.Request(absolute_url, callback=self.start_scraping)
 
         next_page = response.xpath('//a[@aria-label="Next"]/@href').get()
 
@@ -71,7 +63,7 @@ class StraightForwardingSpider(scrapy.Spider):
 
         HB_No = response.xpath(
             '//table[contains(@class, "shipment_info")]//tr[1]/td[1]/text()').get()
-        PO_No = response.xpath('//td[@class="colspan7"]/text()').getall()
+        PO_No = response.xpath('//td[@class="colspan7"]/text()').get()
         ETD = response.xpath('//tr[2]/td[3]/text()').get()
         ETA = response.xpath('//tr[2]/td[2]/text()').get()
         Shipper = response.xpath('//td[@colspan="3"]/text()').get()
