@@ -45,13 +45,13 @@ Entry model for data from StraightForwarding correspoind to google sheet's colum
 
 class Entry:
 
-    def __init__(self, HB_No='', PO_No='', ETD='', ETA='', Shipper='', POL='', POD='',
+    def __init__(self, HB_No='', PO_No='', ATD_ETD='', ATA_ETA='', Shipper='', POL='', POD='',
                  Container_No='', Container_Info_Date='', Container_Info_Location='',
                  Container_Info_Location_Description='', Status='', Arrival_Date=''):
         self.HB_No = HB_No
         self.PO_No = PO_No
-        self.ETD = ETD
-        self.ETA = ETA
+        self.ATD_ETD = ATD_ETD 
+        self.ATA_ETA = ATA_ETA
         self.Shipper = Shipper
         self.POL = POL
         self.POD = POD

@@ -4,6 +4,7 @@ import os
 from scrapy.http import FormRequest
 from ..items import StraightforwardingItem
 from datetime import datetime
+from scrapy_splash import SplashRequest
 
 
 class StraightForwardingSpider(scrapy.Spider):
@@ -31,7 +32,7 @@ class StraightForwardingSpider(scrapy.Spider):
         if response.url == 'https://tracking.straightforwardinginc.com/':
             print('login succeeded')
             now = datetime.now()
-            begin_date = '11-01-2019'
+            begin_date = os.getenv('BEGIN_DATE')
             year = now.year + 1
             end_date = now.strftime("%m-%d") + '-{}'.format(year)
             links_url = 'https://tracking.straightforwardinginc.com/search/?adv=1&type=I&begin_date=' + \
@@ -48,9 +49,10 @@ class StraightForwardingSpider(scrapy.Spider):
             Status = row.xpath('./td[10]/@uib-tooltip-html').get()
 
             link = self.BASE_URL_SPECIFIC + row.xpath('./@data-hbl').get()
-            yield scrapy.Request(link,
-                                 callback=self.start_scraping,
-                                 cb_kwargs=dict(Status=Status))
+            yield SplashRequest(link,
+                                callback=self.start_scraping,
+                                args={'wait': 1},
+                                cb_kwargs=dict(Status=Status))
 
         next_page = response.xpath('//a[@aria-label="Next"]/@href').get()
 
@@ -64,8 +66,19 @@ class StraightForwardingSpider(scrapy.Spider):
         HB_No = response.xpath(
             '//table[contains(@class, "shipment_info")]//tr[1]/td[1]/text()').get()
         PO_No = response.xpath('//td[@class="colspan7"]/text()').get()
-        ETD = response.xpath('//tr[2]/td[3]/text()').get()
-        ETA = response.xpath('//tr[2]/td[2]/text()').get()
+        ATD_ETD_ng_if = response.xpath(
+            '(//li[contains(@class, "vessel-info") and contains(@class,"ng-scope")])[1]/@ng-if').get()
+        if ATD_ETD_ng_if.startswith('!'):
+            ATD_ETD = response.xpath(
+                '(//li[contains(@class, "vessel-info") and contains(@class,"ng-scope")])[1]/text()')\
+                .get().strip()
+        else:
+            ATD_ETD = response.xpath(
+                '(//a[contains(@class, "vessel-info-btn")])[1]/text()').get().strip()
+
+        ATA_ETA = response.xpath(
+            '//span[contains(@class, "ng-binding") and contains(@class, "ng-scope")]/text()').get().strip()
+
         Shipper = response.xpath('//td[@colspan="3"]/text()').get()
         POL = response.xpath('//tr[1]/td[3]/text()').get()
         POD = response.xpath('//tr[1]/td[2]/text()').get()
@@ -81,8 +94,8 @@ class StraightForwardingSpider(scrapy.Spider):
         items['Status'] = " ".join(Status.split('\'')[1].split('<br>'))
         items['HB_No'] = HB_No
         items['PO_No'] = PO_No
-        items['ETD'] = ETD
-        items['ETA'] = ETA
+        items['ATD_ETD'] = ATD_ETD
+        items['ATA_ETA'] = ATA_ETA
         items['Shipper'] = Shipper
         items['POL'] = POL
         items['POD'] = POD

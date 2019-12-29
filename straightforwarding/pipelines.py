@@ -22,8 +22,8 @@ class StraightforwardingPipeline(object):
     def process_item(self, item, spider):
         new_entry = Entry(HB_No=item['HB_No'],
                           PO_No=item['PO_No'],
-                          ETD=item['ETD'],
-                          ETA=item['ETA'],
+                          ATD_ETD=item['ATD_ETD'],
+                          ATA_ETA=item['ATA_ETA'],
                           Shipper=item['Shipper'],
                           POL=item['POL'],
                           POD=item['POD'],
